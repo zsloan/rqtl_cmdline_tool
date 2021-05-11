@@ -8,8 +8,10 @@ args = commandArgs(trailingOnly=TRUE)
 # Parsing command line args like this until optparse is installed
 geno_file = args[1]
 pheno_file = args[2]
-
 cross_file = file.path(tmp_dir, "cross", stri_rand_strings(1, 8)) # Generate randomized filename for cross object
+
+cat('Generating Cross Object\n')
+cross_object = geno_to_csvr(geno_file, cross_file)
 
 trim <- function( x ) { gsub("(^[[:space:]]+|[[:space:]]+$)", "", x) }
 
@@ -18,7 +20,7 @@ getGenoCode <- function(header, name = 'unk'){
     return(trim(strsplit(header[mat],':')[[1]][2]))
 }
 
-GENOtoCSVR <- function(genotypes, out, phenotype = NULL, sex = NULL, mapping_scale = "Mb", verbose = FALSE){
+geno_to_csvr <- function(genotypes, out, phenotype = NULL, sex = NULL, mapping_scale = "Mb", verbose = FALSE){
     header = readLines(genotypes, 40)                                                                                 # Assume a geno header is not longer than 40 lines
     toskip = which(unlist(lapply(header, function(x){ length(grep("Chr\t", x)) })) == 1)-1                            # Major hack to skip the geno headers
     type <- getGenoCode(header, 'type')
