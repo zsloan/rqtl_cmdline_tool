@@ -12,7 +12,7 @@ cross_file = file.path(tmp_dir, "cross", paste(stri_rand_strings(1, 8), ".cross"
 
 trim <- function( x ) { gsub("(^[[:space:]]+|[[:space:]]+$)", "", x) }
 
-getGenoCode <- function(header, name = 'unk'){
+get_geno_code <- function(header, name = 'unk'){
     mat = which(unlist(lapply(header,function(x){ length(grep(paste('@',name,sep=''), x)) })) == 1)
     return(trim(strsplit(header[mat],':')[[1]][2]))
 }
@@ -20,13 +20,13 @@ getGenoCode <- function(header, name = 'unk'){
 geno_to_csvr <- function(genotypes, out, phenotype = NULL, sex = NULL, mapping_scale = "Mb", verbose = FALSE){
     header = readLines(genotypes, 40)                                                                                 # Assume a geno header is not longer than 40 lines
     toskip = which(unlist(lapply(header, function(x){ length(grep("Chr\t", x)) })) == 1)-1                            # Major hack to skip the geno headers
-    type <- getGenoCode(header, 'type')
+    type <- get_geno_code(header, 'type')
     if(type == '4-way'){
     genocodes <- NULL
     } else {
-    genocodes <- c(getGenoCode(header, 'mat'), getGenoCode(header, 'het'), getGenoCode(header, 'pat'))             # Get the genotype codes
+    genocodes <- c(get_geno_code(header, 'mat'), get_geno_code(header, 'het'), get_geno_code(header, 'pat'))             # Get the genotype codes
     }
-    genodata <- read.csv(genotypes, sep='\t', skip=toskip, header=TRUE, na.strings=getGenoCode(header,'unk'), colClasses='character', comment.char = '#')
+    genodata <- read.csv(genotypes, sep='\t', skip=toskip, header=TRUE, na.strings=get_geno_code(header,'unk'), colClasses='character', comment.char = '#')
     cat('Genodata:', toskip, " ", dim(genodata), genocodes, '\n')
     if(is.null(phenotype)) phenotype <- runif((ncol(genodata)-4))                                                     # If there isn't a phenotype, generate a random one
     if(is.null(sex)) sex <- rep('m', (ncol(genodata)-4))                                                              # If there isn't a sex phenotype, treat all as males
