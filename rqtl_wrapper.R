@@ -8,13 +8,7 @@ args = commandArgs(trailingOnly=TRUE)
 # Parsing command line args like this until optparse is installed
 geno_file = args[1]
 pheno_file = args[2]
-cross_file = file.path(tmp_dir, "cross", stri_rand_strings(1, 8)) # Generate randomized filename for cross object
-
-cat('Generating Cross Object\n')
-cross_object = geno_to_csvr(geno_file, cross_file)
-
-cat('Calculating genotype probabilities\n')
-cross_object = calc.genoprob(cross_object)
+cross_file = file.path(tmp_dir, "cross", paste(stri_rand_strings(1, 8), ".cross")) # Generate randomized filename for cross object
 
 trim <- function( x ) { gsub("(^[[:space:]]+|[[:space:]]+$)", "", x) }
 
@@ -57,3 +51,21 @@ geno_to_csvr <- function(genotypes, out, phenotype = NULL, sex = NULL, mapping_s
     }
     return(cross)
 }
+
+gen_pheno_vector_from_file <- function(pheno_file){
+    df <- read.table(pheno_file, na.strings = "x", header=TRUE)
+    sample_names <- df$Sample
+    vals <- df$Value
+
+    return(list(sample_names, vals))
+}
+
+samples_vals = gen_pheno_vector_from_file(pheno_file)
+samples_vector = unlist(samples_vals[1])
+pheno_vector = unlist(samples_vals[2])
+
+cat('Generating Cross Object\n')
+cross_object = geno_to_csvr(geno_file, cross_file)
+
+cat('Calculating genotype probabilities\n')
+cross_object = calc.genoprob(cross_object)
