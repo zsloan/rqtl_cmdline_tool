@@ -1,4 +1,7 @@
 library(qtl)
+library(stringi)
+
+tmp_dir = Sys.getenv("TMPDIR")
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -6,6 +9,7 @@ args = commandArgs(trailingOnly=TRUE)
 geno_file = args[1]
 pheno_file = args[2]
 
+cross_file = file.path(tmp_dir, "cross", stri_rand_strings(1, 8)) # Generate randomized filename for cross object
 
 trim <- function( x ) { gsub("(^[[:space:]]+|[[:space:]]+$)", "", x) }
 
