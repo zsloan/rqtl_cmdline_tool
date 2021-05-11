@@ -13,6 +13,9 @@ cross_file = file.path(tmp_dir, "cross", stri_rand_strings(1, 8)) # Generate ran
 cat('Generating Cross Object\n')
 cross_object = geno_to_csvr(geno_file, cross_file)
 
+cat('Calculating genotype probabilities\n')
+cross_object = calc.genoprob(cross_object)
+
 trim <- function( x ) { gsub("(^[[:space:]]+|[[:space:]]+$)", "", x) }
 
 getGenoCode <- function(header, name = 'unk'){
