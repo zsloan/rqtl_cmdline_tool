@@ -36,7 +36,7 @@ tmp_dir = Sys.getenv("TMPDIR")
 
 geno_file = opt$geno
 pheno_file = opt$pheno
-cross_file = file.path(tmp_dir, "cross", paste(stri_rand_strings(1, 8), ".cross")) # Generate randomized filename for cross object
+cross_file = file.path(tmp_dir, "cross", paste(stri_rand_strings(1, 8), ".cross", sep = "")) # Generate randomized filename for cross object
 
 trim <- function( x ) { gsub("(^[[:space:]]+|[[:space:]]+$)", "", x) }
 
