@@ -98,3 +98,9 @@ cross_object = geno_to_csvr(geno_file, cross_file, pheno_vector)
 
 verbose_print('Calculating genotype probabilities\n')
 cross_object = calc.genoprob(cross_object)
+
+out_file = file.path(tmp_dir, "output", paste(trait_name, "_", stri_rand_strings(1, 8), ".csv", sep = ""))
+
+verbose_print('Running scanone\n')
+qtl_results = scanone(cross_object, pheno.col=1, model=opt$model, method=opt$method)
+write.csv(qtl_results, out_file)
