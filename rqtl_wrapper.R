@@ -91,8 +91,11 @@ samples_vals = gen_pheno_vector_from_file(pheno_file)
 samples_vector = unlist(samples_vals[1])
 pheno_vector = unlist(samples_vals[2])
 
-verbose_print('Generating Cross Object\n')
+verbose_print('Generating cross object\n')
 cross_object = geno_to_csvr(geno_file, cross_file)
 
 verbose_print('Calculating genotype probabilities\n')
 cross_object = calc.genoprob(cross_object)
+
+verbose_print('Adding phenotype to cross object\n')
+cross_object$pheno <- pheno_vector
