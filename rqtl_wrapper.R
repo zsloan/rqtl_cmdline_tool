@@ -88,9 +88,10 @@ gen_pheno_vector_from_file <- function(pheno_file){
     return(list(trait_name, sample_names, vals))
 }
 
-samples_vals = gen_pheno_vector_from_file(pheno_file)
-samples_vector = unlist(samples_vals[1])
-pheno_vector = unlist(samples_vals[2])
+sample_vals = gen_pheno_vector_from_file(pheno_file)
+trait_name = sample_vals[1]
+samples_vector = unlist(sample_vals[2])
+pheno_vector = unlist(sample_vals[3])
 
 verbose_print('Generating cross object\n')
 cross_object = geno_to_csvr(geno_file, cross_file)
