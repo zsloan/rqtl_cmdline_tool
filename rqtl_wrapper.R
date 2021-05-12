@@ -11,11 +11,21 @@ option_list = list(
     make_option(c("-i", "--interval"), type="logical", help="Use interval mapping"),
     make_option(c("--perm"), type="integer", default=0, help="Number of permutations"),
     make_option(c("-s", "--scale"), type="character", default="mb", help="Mapping scale - Megabases (Mb) or Centimorgans (cM)"),
-    make_option(c("--control_marker"), type="character", help="Name of marker (contained in genotype file) to be used as a control")
+    make_option(c("--control_marker"), type="character", help="Name of marker (contained in genotype file) to be used as a control"),
+    make_option(c("-v", "--verbose"), action="store_true", default=NULL, help="Show extra information")
 );
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
+
+verbose_print <- function(...){
+    if (!is.null(opt$verbose)) {
+        for(item in list(...)){
+            cat(item)
+        }
+        cat("\n")
+    }
+}
 
 if (is.null(opt$geno) || is.null(opt$pheno)){
     print_help(opt_parser)
@@ -45,26 +55,25 @@ geno_to_csvr <- function(genotypes, out, phenotype = NULL, sex = NULL, mapping_s
     genocodes <- c(get_geno_code(header, 'mat'), get_geno_code(header, 'het'), get_geno_code(header, 'pat'))             # Get the genotype codes
     }
     genodata <- read.csv(genotypes, sep='\t', skip=toskip, header=TRUE, na.strings=get_geno_code(header,'unk'), colClasses='character', comment.char = '#')
-    cat('Genodata:', toskip, " ", dim(genodata), genocodes, '\n')
+    verbose_print('Genodata:', toskip, " ", dim(genodata), genocodes, '\n')
     if(is.null(phenotype)) phenotype <- runif((ncol(genodata)-4))                                                     # If there isn't a phenotype, generate a random one
     if(is.null(sex)) sex <- rep('m', (ncol(genodata)-4))                                                              # If there isn't a sex phenotype, treat all as males
     outCSVR <- rbind(c('Pheno', '', '', phenotype),                                                                   # Phenotype
                     c('sex', '', '', sex),                                                                           # Sex phenotype for the mice
                     cbind(genodata[,c('Locus','Chr', mapping_scale)], genodata[, 5:ncol(genodata)]))                          # Genotypes
     write.table(outCSVR, file = out, row.names=FALSE, col.names=FALSE,quote=FALSE, sep=',')                           # Save it to a file
-    require(qtl)
     if(type == '4-way'){
-    cat('Loading in as 4-WAY\n')
+    verbose_print('Loading in as 4-WAY\n')
     cross = read.cross(file=out, 'csvr', genotypes=NULL, crosstype="4way")                                         # Load the created cross file using R/qtl read.cross
     }else if(type == 'f2'){
-    cat('Loading in as F2\n')
+    verbose_print('Loading in as F2\n')
     cross = read.cross(file=out, 'csvr', genotypes=genocodes, crosstype="f2")                                       # Load the created cross file using R/qtl read.cross
     }else{
-    cat('Loading in as normal\n')
+    verbose_print('Loading in as normal\n')
     cross = read.cross(file=out, 'csvr', genotypes=genocodes)                                                       # Load the created cross file using R/qtl read.cross
     }
     if(type == 'riset'){
-    cat('Converting to RISELF\n')
+    verbose_print('Converting to RISELF\n')
     cross <- convert2riself(cross)                                                                # If its a RIL, convert to a RIL in R/qtl
     }
     return(cross)
@@ -82,8 +91,8 @@ samples_vals = gen_pheno_vector_from_file(pheno_file)
 samples_vector = unlist(samples_vals[1])
 pheno_vector = unlist(samples_vals[2])
 
-cat('Generating Cross Object\n')
+verbose_print('Generating Cross Object\n')
 cross_object = geno_to_csvr(geno_file, cross_file)
 
-cat('Calculating genotype probabilities\n')
+verbose_print('Calculating genotype probabilities\n')
 cross_object = calc.genoprob(cross_object)
