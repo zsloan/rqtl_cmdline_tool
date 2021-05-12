@@ -82,7 +82,8 @@ geno_to_csvr <- function(genotypes, out, phenotype = NULL, sex = NULL, mapping_s
 gen_pheno_vector_from_file <- function(pheno_file){
     df <- read.table(pheno_file, na.strings = "x", header=TRUE)
     sample_names <- df$Sample
-    vals <- df$Value
+    trait_name <- colnames(df)[1]
+    vals <- df[trait_name]
 
     return(list(sample_names, vals))
 }
