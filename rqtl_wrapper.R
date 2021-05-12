@@ -98,6 +98,3 @@ cross_object = geno_to_csvr(geno_file, cross_file, pheno_vector)
 
 verbose_print('Calculating genotype probabilities\n')
 cross_object = calc.genoprob(cross_object)
-
-verbose_print('Adding phenotype to cross object\n')
-cross_object$pheno <- pheno_vector
