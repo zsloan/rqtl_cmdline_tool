@@ -127,8 +127,14 @@ if (opt$interval) {
   cross_object = calc.genoprob(cross_object)
 }
 
-out_file = file.path(tmp_dir, "output", paste(trait_name, "_", stri_rand_strings(1, 8), ".csv", sep = ""))
+if (opt$perm > 0) {
+  verbose_print('Running permutations\n')
+  perm_out_file = file.path(tmp_dir, "output", paste(trait_name, "_PERM_", stri_rand_strings(1, 8), ".csv", sep = ""))
+  perm_results = scanone(cross_object, pheno.col=1, n.perm=opt$perm, model=opt$model, method=opt$method)
+  write.csv(perm_results, perm_out_file)
+}
 
 verbose_print('Running scanone\n')
+out_file = file.path(tmp_dir, "output", paste(trait_name, "_", stri_rand_strings(1, 8), ".csv", sep = ""))
 qtl_results = scanone(cross_object, pheno.col=1, model=opt$model, method=opt$method)
 write.csv(qtl_results, out_file)
