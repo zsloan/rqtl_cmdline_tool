@@ -118,8 +118,14 @@ pheno_vector = unlist(sample_vals[3])
 verbose_print('Generating cross object\n')
 cross_object = geno_to_csvr(geno_file, pheno_vector, cross_file)
 
-verbose_print('Calculating genotype probabilities\n')
-cross_object = calc.genoprob(cross_object)
+# Calculate genotype probabilities
+if (opt$interval) {
+  verbose_print('Calculating genotype probabilities with interval mapping\n')
+  cross_object = calc.genoprob(cross_object, step=5, stepwidth="max")
+} else {
+  verbose_print('Calculating genotype probabilities\n')
+  cross_object = calc.genoprob(cross_object)
+}
 
 out_file = file.path(tmp_dir, "output", paste(trait_name, "_", stri_rand_strings(1, 8), ".csv", sep = ""))
 
