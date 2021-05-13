@@ -45,7 +45,7 @@ get_geno_code <- function(header, name = 'unk'){
   return(trim(strsplit(header[mat],':')[[1]][2]))
 }
 
-geno_to_csvr <- function(genotypes, out, phenotype = NULL, sex = NULL,
+geno_to_csvr <- function(genotypes, phenotype, out, sex = NULL,
                          mapping_scale = "Mb", verbose = FALSE){
   # Assume a geno header is not longer than 40 lines
   header = readLines(genotypes, 40)
@@ -114,7 +114,7 @@ samples_vector = unlist(sample_vals[2])
 pheno_vector = unlist(sample_vals[3])
 
 verbose_print('Generating cross object\n')
-cross_object = geno_to_csvr(geno_file, cross_file, pheno_vector)
+cross_object = geno_to_csvr(geno_file, pheno_vector, cross_file)
 
 verbose_print('Calculating genotype probabilities\n')
 cross_object = calc.genoprob(cross_object)
