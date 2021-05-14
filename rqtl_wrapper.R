@@ -127,25 +127,42 @@ for (i in 1:length(trait_names)) {
 pheno_name = unlist(trait_names)[1]
 
 verbose_print('Generating cross object\n')
-cross_object = geno_to_csvr(geno_file, pheno_vector, cross_file)
+cross_object = geno_to_csvr(geno_file, trait_names, trait_vals, cross_file)
 
 # Calculate genotype probabilities
 if (opt$interval) {
   verbose_print('Calculating genotype probabilities with interval mapping\n')
-  cross_object = calc.genoprob(cross_object, step=5, stepwidth="max")
+  cross_object <- calc.genoprob(cross_object, step=5, stepwidth="max")
 } else {
   verbose_print('Calculating genotype probabilities\n')
-  cross_object = calc.genoprob(cross_object)
+  cross_object <- calc.genoprob(cross_object)
 }
 
+#ZS: Pull covariates out of cross object, if they exist
+if (!is.null(opt$addcovar)){
+  covar_names = trait_names[2:length(trait_names)]
+  covars <- pull.pheno(cross_object, covar_names)
+}
+
+# Calculate permutations
 if (opt$perm > 0) {
-  verbose_print('Running permutations\n')
-  perm_out_file = file.path(tmp_dir, "output", paste(trait_name, "_PERM_", stri_rand_strings(1, 8), ".csv", sep = ""))
-  perm_results = scanone(cross_object, pheno.col=1, n.perm=opt$perm, model=opt$model, method=opt$method)
+  perm_out_file = file.path(tmp_dir, "output", paste(pheno_name, "_PERM_", stri_rand_strings(1, 8), ".csv", sep = ""))
+  if (!is.null(opt$covar)){
+    verbose_print('Running permutations with cofactors\n')
+    perm_results = scanone(cross_object, pheno.col=1, addcovar=covars, n.perm=opt$perm, model=opt$model, method=opt$method)
+  } else {
+    verbose_print('Running permutations\n')
+    perm_results = scanone(cross_object, pheno.col=1, n.perm=opt$perm, model=opt$model, method=opt$method)
+  }
   write.csv(perm_results, perm_out_file)
 }
 
-verbose_print('Running scanone\n')
-out_file = file.path(tmp_dir, "output", paste(trait_name, "_", stri_rand_strings(1, 8), ".csv", sep = ""))
-qtl_results = scanone(cross_object, pheno.col=1, model=opt$model, method=opt$method)
+out_file = file.path(tmp_dir, "output", paste(pheno_name, "_", stri_rand_strings(1, 8), ".csv", sep = ""))
+if (!is.null(opt$addcovar)){
+  verbose_print('Running scanone with cofactors\n')
+  qtl_results = scanone(cross_object, pheno.col=1, addcovar=covars, model=opt$model, method=opt$method)
+} else {
+  verbose_print('Running scanone\n')
+  qtl_results = scanone(cross_object, pheno.col=1, model=opt$model, method=opt$method)
+}
 write.csv(qtl_results, out_file)
