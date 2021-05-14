@@ -5,7 +5,7 @@ library(stringi)
 option_list = list(
   make_option(c("-g", "--geno"), type="character", help=".geno file containing a dataset's genotypes"),
   make_option(c("-p", "--pheno"), type="character", help="File containing two columns - sample names and values"),
-  make_option(c("-c", "--covar"), type="character", help="File containing covariates - first column sample names, other columns covariate values"),
+  make_option(c("-c", "--addcovar"), action="store_true", default=NULL, help="Use covariates (included as extra columns in the phenotype input file)"),
   make_option(c("--model"), type="character", default="normal", help="Mapping Model - Normal or Non-Parametric"),
   make_option(c("--method"), type="character", default="hk", help="Mapping Method - hk (Haley Knott), ehk (Extended Haley Knott), mr (Marker Regression), em (Expectation-Maximization), imp (Imputation)"),
   make_option(c("-i", "--interval"), action="store_true", default=NULL, help="Use interval mapping"),
