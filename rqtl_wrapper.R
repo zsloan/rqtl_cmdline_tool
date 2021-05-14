@@ -130,7 +130,7 @@ verbose_print('Generating cross object\n')
 cross_object = geno_to_csvr(geno_file, trait_names, trait_vals, cross_file)
 
 # Calculate genotype probabilities
-if (opt$interval) {
+if (!is.null(opt$interval)) {
   verbose_print('Calculating genotype probabilities with interval mapping\n')
   cross_object <- calc.genoprob(cross_object, step=5, stepwidth="max")
 } else {
