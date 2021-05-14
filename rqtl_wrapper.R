@@ -47,7 +47,7 @@ get_geno_code <- function(header, name = 'unk'){
   return(trim(strsplit(header[mat],':')[[1]][2]))
 }
 
-geno_to_csvr <- function(genotypes, phenotype, out, sex = NULL,
+geno_to_csvr <- function(genotypes, trait_names, trait_vals, out, sex = NULL,
                          mapping_scale = "Mb", verbose = FALSE){
   # Assume a geno header is not longer than 40 lines
   header = readLines(genotypes, 40)
@@ -73,13 +73,23 @@ geno_to_csvr <- function(genotypes, phenotype, out, sex = NULL,
   # If there isn't a sex phenotype, treat all as males
   if(is.null(sex)) sex <- rep('m', (ncol(genodata)-4))
 
-  outCSVR <- rbind(c('Pheno', '', '', phenotype),                    # Phenotype
-                   c('sex', '', '', sex),                            # Sex phenotype for the mice
-                   cbind(genodata[,c('Locus','Chr', mapping_scale)], # Genotypes
-                         genodata[, 5:ncol(genodata)]))
+  cross_items = list()
+
+  # Add trait and covar phenotypes
+  for (i in 1:length(trait_names)){
+    cross_items[[i]] <- c(trait_names[i], '', '', unlist(trait_vals[[i]]))
+  }
+
+  # Sex phenotype for the mice
+  cross_items[[length(trait_names) + 1]] <- c('sex', '', '', sex)
+  # Genotypes
+  cross_items[[length(trait_names) + 2]] <- cbind(genodata[,c('Locus','Chr', mapping_scale)],
+                                                  genodata[, 5:ncol(genodata)])
+
+  out_csvr <- do.call(rbind, cross_items)
 
   # Save it to a file
-  write.table(outCSVR, file = out, row.names=FALSE, col.names=FALSE,quote=FALSE, sep=',')
+  write.table(out_csvr, file=out, row.names=FALSE, col.names=FALSE, quote=FALSE, sep=',')
 
   # Load the created cross file using R/qtl read.cross
   if (type == '4-way') {
@@ -101,19 +111,20 @@ geno_to_csvr <- function(genotypes, phenotype, out, sex = NULL,
   return(cross)
 }
 
-gen_pheno_vector_from_file <- function(pheno_file){
-  df <- read.table(pheno_file, na.strings = "x", header=TRUE, check.names=FALSE)
-  sample_names <- df$Sample
-  trait_name <- colnames(df)[2]
-  vals <- df[trait_name]
+# Get phenotype vector from input file
+df <- read.table(pheno_file, na.strings = "x", header=TRUE, check.names=FALSE)
+sample_names <- df$Sample
+trait_names <- colnames(df)[2:length(colnames(df))]
 
-  return(list(trait_name, sample_names, vals))
+trait_vals <- vector(mode = "list", length = length(trait_names))
+for (i in 1:length(trait_names)) {
+  this_trait <- trait_names[i]
+  this_vals <- df[this_trait]
+  trait_vals[[i]] <- this_vals
 }
 
-sample_vals = gen_pheno_vector_from_file(pheno_file)
-trait_name = sample_vals[1]
-samples_vector = unlist(sample_vals[2])
-pheno_vector = unlist(sample_vals[3])
+# Since there will always only be one non-covar phenotype, its name will be in the first column
+pheno_name = unlist(trait_names)[1]
 
 verbose_print('Generating cross object\n')
 cross_object = geno_to_csvr(geno_file, pheno_vector, cross_file)
