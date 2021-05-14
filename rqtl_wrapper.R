@@ -9,7 +9,7 @@ option_list = list(
   make_option(c("--model"), type="character", default="normal", help="Mapping Model - Normal or Non-Parametric"),
   make_option(c("--method"), type="character", default="hk", help="Mapping Method - hk (Haley Knott), ehk (Extended Haley Knott), mr (Marker Regression), em (Expectation-Maximization), imp (Imputation)"),
   make_option(c("-i", "--interval"), action="store_true", default=NULL, help="Use interval mapping"),
-  make_option(c("--perm"), type="integer", default=0, help="Number of permutations"),
+  make_option(c("--nperm"), type="integer", default=0, help="Number of permutations"),
   make_option(c("-s", "--scale"), type="character", default="mb", help="Mapping scale - Megabases (Mb) or Centimorgans (cM)"),
   make_option(c("--control_marker"), type="character", help="Name of marker (contained in genotype file) to be used as a control"),
   make_option(c("-v", "--verbose"), action="store_true", default=NULL, help="Show extra information")
