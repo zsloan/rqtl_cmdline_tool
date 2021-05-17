@@ -2,6 +2,8 @@ library(optparse)
 library(qtl)
 library(stringi)
 
+tmp_dir = Sys.getenv("TMPDIR")
+
 option_list = list(
   make_option(c("-g", "--geno"), type="character", help=".geno file containing a dataset's genotypes"),
   make_option(c("-p", "--pheno"), type="character", help="File containing two columns - sample names and values"),
@@ -32,8 +34,6 @@ if (is.null(opt$geno) || is.null(opt$pheno)){
   print_help(opt_parser)
   stop("Both a genotype and phenotype file must be provided.", call.=FALSE)
 }
-
-tmp_dir = Sys.getenv("TMPDIR")
 
 geno_file = opt$geno
 pheno_file = opt$pheno
