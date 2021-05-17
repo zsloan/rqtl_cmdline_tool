@@ -1,6 +1,7 @@
 library(optparse)
 library(qtl)
 library(stringi)
+library(stringr)
 
 tmp_dir = Sys.getenv("TMPDIR")
 
@@ -13,7 +14,7 @@ option_list = list(
   make_option(c("-i", "--interval"), action="store_true", default=NULL, help="Use interval mapping"),
   make_option(c("--nperm"), type="integer", default=0, help="Number of permutations"),
   make_option(c("-s", "--scale"), type="character", default="mb", help="Mapping scale - Megabases (Mb) or Centimorgans (cM)"),
-  make_option(c("--control_marker"), type="character", default=NULL, help="Name of marker (contained in genotype file) to be used as a control"),
+  make_option(c("--control"), type="character", default=NULL, help="Name of marker (contained in genotype file) to be used as a control"),
   make_option(c("-o", "--outdir"), type="character", default=file.path(tmp_dir, "output"), help="Directory in which to write result file"),
   make_option(c("-v", "--verbose"), action="store_true", default=NULL, help="Show extra information")
 );
@@ -112,6 +113,22 @@ geno_to_csvr <- function(genotypes, trait_names, trait_vals, out, sex = NULL,
   return(cross)
 }
 
+create_marker_covars <- function(the_cross, control_marker){
+  #' Given a string of one or more marker names (comma separated), fetch
+  #' the markers' values from the genotypes and return them as vectors/a vector
+  #' of values
+
+  # In case spaces are added in the string of marker names
+  covariate_names <- strsplit(str_replace(control_marker, " ", ""), ",")
+
+  genotypes <- pull.geno(the_cross)
+  covariates_in_geno <- which(covariate_names %in% colnames(genotypes))
+  covariate_names <- covariate_names[covariates_in_geno]
+  marker_covars <- genotypes[, unlist(covariate_names)]
+
+  return(marker_covars)
+}
+
 # Get phenotype vector from input file
 df <- read.table(pheno_file, na.strings = "x", header=TRUE, check.names=FALSE)
 sample_names <- df$Sample
@@ -139,17 +156,24 @@ if (!is.null(opt$interval)) {
   cross_object <- calc.genoprob(cross_object)
 }
 
-#ZS: Pull covariates out of cross object, if they exist
-if (!is.null(opt$addcovar)){
+# Pull covariates out of cross object, if they exist
+covars = vector()
+if (!is.null(opt$addcovar)) {
   covar_names = trait_names[2:length(trait_names)]
   covars <- pull.pheno(cross_object, covar_names)
+}
+
+# If a marker name is supplied as covariate, get its vector of values and add them as a covariate
+if (!is.null(opt$control)) {
+  marker_covars = create_marker_covars(cross_object, opt$control)
+  covars <- cbind(covars, marker_covars)
 }
 
 # Calculate permutations
 if (opt$nperm > 0) {
   perm_out_file = file.path(opt$outdir, paste(pheno_name, "_PERM_", stri_rand_strings(1, 8), ".csv", sep = ""))
 
-  if (!is.null(opt$covar)){
+  if (!is.null(opt$addcovar) || !is.null(opt$control)){
     verbose_print('Running permutations with cofactors\n')
     perm_results = scanone(cross_object, pheno.col=1, addcovar=covars, n.perm=opt$nperm, model=opt$model, method=opt$method)
   } else {
@@ -161,7 +185,7 @@ if (opt$nperm > 0) {
 
 out_file = file.path(opt$outdir, paste(pheno_name, "_", stri_rand_strings(1, 8), ".csv", sep = ""))
 
-if (!is.null(opt$addcovar)){
+if (!is.null(opt$addcovar) || !is.null(opt$control)){
   verbose_print('Running scanone with cofactors\n')
   qtl_results = scanone(cross_object, pheno.col=1, addcovar=covars, model=opt$model, method=opt$method)
 } else {
