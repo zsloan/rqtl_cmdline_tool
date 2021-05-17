@@ -147,11 +147,8 @@ if (!is.null(opt$addcovar)){
 
 # Calculate permutations
 if (opt$nperm > 0) {
-  if (!is.null(opt$outdir)){
-    perm_out_file = file.path(opt$outdir, paste(pheno_name, "_PERM_", stri_rand_strings(1, 8), ".csv", sep = ""))
-  } else {
-    perm_out_file = file.path(tmp_dir, "output", paste(pheno_name, "_PERM_", stri_rand_strings(1, 8), ".csv", sep = ""))
-  }
+  perm_out_file = file.path(opt$outdir, paste(pheno_name, "_PERM_", stri_rand_strings(1, 8), ".csv", sep = ""))
+
   if (!is.null(opt$covar)){
     verbose_print('Running permutations with cofactors\n')
     perm_results = scanone(cross_object, pheno.col=1, addcovar=covars, n.perm=opt$nperm, model=opt$model, method=opt$method)
@@ -162,11 +159,8 @@ if (opt$nperm > 0) {
   write.csv(perm_results, perm_out_file)
 }
 
-if (!is.null(opt$outdir)){
-  out_file = file.path(opt$outdir, paste(pheno_name, "_", stri_rand_strings(1, 8), ".csv", sep = ""))
-} else {
-  out_file = file.path(tmp_dir, "output", paste(pheno_name, "_", stri_rand_strings(1, 8), ".csv", sep = ""))
-}
+out_file = file.path(opt$outdir, paste(pheno_name, "_", stri_rand_strings(1, 8), ".csv", sep = ""))
+
 if (!is.null(opt$addcovar)){
   verbose_print('Running scanone with cofactors\n')
   qtl_results = scanone(cross_object, pheno.col=1, addcovar=covars, model=opt$model, method=opt$method)
